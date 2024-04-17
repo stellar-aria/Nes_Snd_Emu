@@ -17,46 +17,54 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 template <int mode>
 struct apu_reflection {
-#define REFLECT(apu, state) (mode ? void((apu) = (state)) : void((state) = (apu)))
+  [[gnu::always_inline]]
+  static void reflect(auto& apu, auto& state) {
+    if constexpr (mode != 0) {
+      apu = state;
+    }
+    else {
+      state = apu;
+    }
+  }
 
   static void reflect_env(apu_snapshot_t::env_t& state, Nes_Envelope& osc) {
-    REFLECT(state[0], osc.env_delay);
-    REFLECT(state[1], osc.envelope);
-    REFLECT(state[2], osc.reg_written[3]);
+    reflect(state[0], osc.env_delay);
+    reflect(state[1], osc.envelope);
+    reflect(state[2], osc.reg_written[3]);
   }
 
   static void reflect_square(apu_snapshot_t::square_t& state, Nes_Square& osc) {
     reflect_env(state.env, osc);
-    REFLECT(state.delay, osc.delay);
-    REFLECT(state.length, osc.length_counter);
-    REFLECT(state.phase, osc.phase);
-    REFLECT(state.swp_delay, osc.sweep_delay);
-    REFLECT(state.swp_reset, osc.reg_written[1]);
+    reflect(state.delay, osc.delay);
+    reflect(state.length, osc.length_counter);
+    reflect(state.phase, osc.phase);
+    reflect(state.swp_delay, osc.sweep_delay);
+    reflect(state.swp_reset, osc.reg_written[1]);
   }
 
   static void reflect_triangle(apu_snapshot_t::triangle_t& state, Nes_Triangle& osc) {
-    REFLECT(state.delay, osc.delay);
-    REFLECT(state.length, osc.length_counter);
-    REFLECT(state.linear_counter, osc.linear_counter);
-    REFLECT(state.linear_mode, osc.reg_written[3]);
+    reflect(state.delay, osc.delay);
+    reflect(state.length, osc.length_counter);
+    reflect(state.linear_counter, osc.linear_counter);
+    reflect(state.linear_mode, osc.reg_written[3]);
   }
 
   static void reflect_noise(apu_snapshot_t::noise_t& state, Nes_Noise& osc) {
     reflect_env(state.env, osc);
-    REFLECT(state.delay, osc.delay);
-    REFLECT(state.length, osc.length_counter);
-    REFLECT(state.shift_reg, osc.noise);
+    reflect(state.delay, osc.delay);
+    reflect(state.length, osc.length_counter);
+    reflect(state.shift_reg, osc.noise);
   }
 
   static void reflect_dmc(apu_snapshot_t::dmc_t& state, Nes_Dmc& osc) {
-    REFLECT(state.delay, osc.delay);
-    REFLECT(state.remain, osc.length_counter);
-    REFLECT(state.buf, osc.buf);
-    REFLECT(state.bits_remain, osc.bits_remain);
-    REFLECT(state.bits, osc.bits);
-    REFLECT(state.buf_empty, osc.buf_empty);
-    REFLECT(state.silence, osc.silence);
-    REFLECT(state.irq_flag, osc.irq_flag);
+    reflect(state.delay, osc.delay);
+    reflect(state.remain, osc.length_counter);
+    reflect(state.buf, osc.buf);
+    reflect(state.bits_remain, osc.bits_remain);
+    reflect(state.bits, osc.bits);
+    reflect(state.buf_empty, osc.buf_empty);
+    reflect(state.silence, osc.silence);
+    reflect(state.irq_flag, osc.irq_flag);
     if (mode != 0) {
       state.addr = osc.address | 0x8000;
     }
@@ -76,7 +84,7 @@ void Nes_Apu::save_snapshot(apu_snapshot_t* state) const {
   state->w4017 = frame_mode;
   state->delay = frame_delay;
   state->step = frame;
-  state->irq_flag = static_cast<byte>(irq_flag);
+  state->irq_flag = static_cast<uint8_t>(irq_flag);
 
   typedef apu_reflection<1> refl;
   Nes_Apu& apu = *(Nes_Apu*)this;  // const_cast
@@ -101,7 +109,7 @@ void Nes_Apu::load_snapshot(apu_snapshot_t const& state) {
 
   frame_delay = state.delay;
   frame = state.step;
-  irq_flag = (state.irq_flag != 0);
+  irq_flag = (state.irq_flag != 0u);
 
   typedef apu_reflection<0> refl;
   auto& st = (apu_snapshot_t&)state;  // const_cast
