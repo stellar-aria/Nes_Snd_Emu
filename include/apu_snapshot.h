@@ -1,16 +1,17 @@
-
 // NES APU snapshot support
+#include <cstdint>
+#include <cstddef>
 
 // Nes_Snd_Emu 0.1.7. Copyright (C) 2003-2005 Shay Green. GNU LGPL license.
 #pragma once
 
 struct apu_snapshot_t {
-  using byte = int;
+  using byte = uint8_t;
 
-  typedef byte env_t[3];
+  using env_t = byte[3];
   /*struct env_t {
           byte delay;
-          byte env;3
+          byte env;
           byte written;
   };*/
 
@@ -61,7 +62,7 @@ struct apu_snapshot_t {
     byte irq_flag{};
   } dmc;
 
-  enum { tag = 'APUR' };
+  static constexpr int32_t tag = 'APUR';
   void swap();
 };
 static_assert(sizeof(apu_snapshot_t) == 72, "apu_snapshot_t should be exactly 72 bytes");

@@ -3,6 +3,9 @@
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <numeric>
+#include <numbers>
+
 
 /* Copyright (C) 2003-2008 Shay Green. This module is free software; you
 can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -18,7 +21,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 //// Blip_Buffer
 
 Blip_Buffer::Blip_Buffer() : Blip_Buffer_() {
-  factor_ = UINT_MAX / 2 + 1;
+  factor_ = std::numeric_limits<uint32_t>::max() / 2 + 1;
   buffer_ = nullptr;
   buffer_center_ = nullptr;
   buffer_size_ = 0;

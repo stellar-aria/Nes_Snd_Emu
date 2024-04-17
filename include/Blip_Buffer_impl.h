@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <assert.h>
+#include <cassert>
 
 using blip_resampled_time_t = unsigned int;
 
